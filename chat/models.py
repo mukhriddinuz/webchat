@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
    status = models.IntegerField(choices=((1, 'Admin'), (2, 'Employee')), default=1)
+   image = models.ImageField(upload_to='users/', blank=True, null=True)
 
 
 class ChatGroup(models.Model):
