@@ -10,5 +10,6 @@ class ChatGroup(models.Model):
    is_active = models.BooleanField(default=True)
    created_at = models.DateTimeField(auto_now_add=True)
    date = models.DateTimeField(auto_now=True)
-   
+   users = models.ManyToManyField(User, related_name='chat_groups')
+
 
