@@ -1,4 +1,3 @@
-
 from pathlib import Path
 from datetime import timedelta
 
@@ -6,6 +5,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure---+r$0cx+jw8a+sl4ltu%*!-9=h2sffjn12++q1h!n1wcxb7yb'
 
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
@@ -24,7 +24,7 @@ INSTALLED_APPS = [
 
     'chat.apps.ChatConfig',
     'rest_framework',  
-    'rest_framework.authtoken',
+    'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
 ]
 
@@ -46,8 +46,8 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=90),  
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),     
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=90),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
 }
@@ -74,9 +74,13 @@ ASGI_APPLICATION = 'home.asgi.application'
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
     },
 }
+
 
 DATABASES = {
     'default': {
