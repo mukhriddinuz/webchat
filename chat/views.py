@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from utils import render_data, render_message
 
-from .models import User, ChatGroup
+from .models import User, Chat
 from .serializers import LoginSerializer, UserSerializerWithToken
 
 
@@ -36,7 +36,7 @@ class SignUpView(UserGenericAPIView):
                 password=password,
             )
 
-            group, created = ChatGroup.objects.get_or_create(name='general_group')
+            group, created = Chat.objects.get_or_create(name='general_group')
 
             if created:
                 created.users.add(custom_user)
