@@ -1,12 +1,12 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken, Token
 
-from .models import User
+from .models import User, Chat, Message
 
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField()
 
     def validate(self, attrs):
         username = attrs.get('username')
@@ -34,9 +34,8 @@ class UserSerializerWithToken(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'first_name', 'last_name', 'username',
-            'status', 'is_superuser', 'access', 'refresh',
-            'isAdmin', 'image'
+            'id', 'first_name', 'last_name', 'username', 'is_superuser', 'access', 'refresh',
+            'isAdmin',
         )
 
     def get_access(self, user: User):
@@ -49,3 +48,24 @@ class UserSerializerWithToken(serializers.ModelSerializer):
 
     def get_isAdmin(self, user: User):
         return user.is_staff
+
+
+class ChatSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Chat
+        fields = [
+            'id', 'name', 'is_active', 'is_group',
+            'participants', 'sender', 'recipient', 'created_at'
+        ]
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    chat = ChatSerializer()
+
+    class Meta:
+        model = Message
+        fields = [
+            'id', 'sender', 'chat', 'file',
+            'text', 'is_main', 'is_edited', 'is_deleted'
+        ]

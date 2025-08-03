@@ -22,7 +22,8 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('chat/', include('chat.urls')),
+    path('chat/', include('chat.api.urls.chat')),
+    path('message/', include('chat.api.urls.message')),
     path('', include('main.urls')),
     path('api/swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
