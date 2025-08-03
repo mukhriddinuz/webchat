@@ -1,10 +1,8 @@
-from asyncio import exceptions
-from urllib import request
-
+from django.core import exceptions
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView
-
+from rest_framework.permissions import IsAuthenticated
 from utils import render_data, render_message
 
 from ...models import User, Chat
@@ -14,6 +12,7 @@ from ...serializers import ChatSerializer
 class ChatGenericAPIView(GenericAPIView):
     queryset = Chat
     serializer_class = ChatSerializer
+    permission_classes = [IsAuthenticated]
 
 
 class ListChatView(ChatGenericAPIView):

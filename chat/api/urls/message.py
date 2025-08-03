@@ -5,6 +5,6 @@ from ..views.message import ListMessageView , CreateMessageView , UpdateMessageV
 urlpatterns = [
     path('list', ListMessageView.as_view(), name='list'),
     path('create', CreateMessageView.as_view(), name='create'),
-    path('update/<int:chat_id>/', UpdateMessageView.as_view(), name='update'),
-    path('delete/<int:chat_id>/', DeleteMessageView.as_view(), name='delete'),
+    path('update/<int:message_id>/', UpdateMessageView.as_view(), name='update'),
+    path('delete/<int:message_id>>/', DeleteMessageView.as_view(), name='delete'),
 ]

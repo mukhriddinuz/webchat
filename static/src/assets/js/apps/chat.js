@@ -29,6 +29,40 @@ $('.user-list-box .person').on('click', function(event) {
         $('.chat-box .overlay-video-call').css('display', 'block');
         $(this).addClass('active');
         $('.chat[data-chat = '+findChat+']').addClass('active-chat');
+
+        if ($('.chat[data-chat = '+findChat+']').addClass('active-chat')) {
+            $.ajax({
+                  url: `/get_messages?recipient=${findChat.replace('person', '')}`,
+                  method: 'GET',
+                  success: function(data) {
+                    let sender = data.chat_data.sender;
+                    let chat_html = '';
+                    
+                    data.message.forEach(function(element) {
+                      let send = element.sender_id == sender ? 'me' : 'you';
+                      console.log(element.sender_id)
+                      console.log(sender)
+                      chat_html += `
+                        <div class="bubble ${send}">
+                          ${element.text}
+                        </div>
+                      `;
+                    });
+
+                    let html = `
+                      <div class="chat active-chat" data-chat="person${findChat}">
+                        ${chat_html}
+                      </div>
+                    `;
+
+                    document.getElementById('chat-conversation-box-scroll').innerHTML = html;
+                  },
+                  error: function(err) {
+                    console.error("Xabarlarni olishda xatolik yuz berdi", err);
+                  }
+              });
+        }
+
     }
     if ($(this).parents('.user-list-box').hasClass('user-list-box-show')) {
       $(this).parents('.user-list-box').removeClass('user-list-box-show');

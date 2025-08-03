@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'chat.apps.ChatConfig',
+    'drf_yasg',
     'rest_framework',  
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
@@ -76,7 +77,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],  # Redis localda ishga tushgan bo‘lishi kerak!
+            "hosts": [("127.0.0.1", 6379)],
         },
     },
 }

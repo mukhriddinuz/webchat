@@ -30,7 +30,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         self.channel_name
                     )
                     await self.accept()
-                    # await self.fecht_history()
+                    await self.fetch_history(self.room_name)
                     return
         except Exception as e:
             print(f"Connection error: {str(e)}")
@@ -100,8 +100,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         print(data)
         return message.created_at
     
-    async def fetch_history(self):
-        messages = await self.history_messages()
+    async def fetch_history(self, chat_id):
+        messages = await self.history_messages(chat_id)
         for message in messages:
             await self.send(text_data=json.dumps(message))
     
@@ -120,7 +120,37 @@ class ChatConsumer(AsyncWebsocketConsumer):
 class OnlineUsers(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = 'online_users'
+        try:
+            headers = dict(self.scope['headers'])
+            auth_header = headers.get(b'authorization', b'').decode('utf-8')
+            print(f"Connecting to online users with header: {auth_header}")
+            if auth_header.startswith('Bearer '):
+                token = auth_header.split(' ')[1]
+                user = await self.get_user_from_token(token)
+                print(user)
+                if user and not isinstance(user, AnonymousUser):
+                    status = await self.user_status(user.id, 'Online')
+                    print(status)
+        except Exception as e:
+            print(f"Error connecting to online users: {str(e)}")
+            await self.close()
+            return
         await self.accept()
 
     async def disconnect(self, close_code):
+        print(self.scope['user'])
+        status = await self.user_status(self.scope['user'].id, timezone.now())
         await self.close()
+
+    async def user_status(self, user_id, status):
+        message_status = await self.edit_user_status(user_id, status)
+        return message_status
+    
+    @database_sync_to_async
+    def edit_user_status(self, user_id, status):
+        user = User.objects.get(id=user_id)
+        print(f"User status updated: {user.username} is now {status}")
+        user.is_online = status
+        user.save()
+        return True
+    
