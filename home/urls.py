@@ -22,6 +22,7 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('users/', include('chat.api.urls.register')),
     path('chat/', include('chat.api.urls.chat')),
     path('message/', include('chat.api.urls.message')),
     path('', include('main.urls')),
