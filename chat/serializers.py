@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken, Token
 
-from .models import User
+from .models import User, Chat, Message
 
 
 class LoginSerializer(serializers.Serializer):
@@ -48,3 +48,24 @@ class UserSerializerWithToken(serializers.ModelSerializer):
 
     def get_isAdmin(self, user: User):
         return user.is_staff
+
+
+class ChatSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Chat
+        fields = [
+            'id', 'name', 'is_active', 'is_group',
+            'participants', 'sender', 'recipient', 'created_at'
+        ]
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    chat = ChatSerializer()
+
+    class Meta:
+        model = Message
+        fields = [
+            'id', 'sender', 'chat', 'file',
+            'text', 'is_main', 'is_edited', 'is_deleted'
+        ]

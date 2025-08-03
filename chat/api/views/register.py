@@ -8,8 +8,8 @@ from rest_framework.permissions import IsAuthenticated
 
 from utils import render_data, render_message
 
-from .models import User, Chat
-from .serializers import LoginSerializer, UserSerializerWithToken
+from ...models import User, Chat
+from ...serializers import LoginSerializer, UserSerializerWithToken
 
 
 class UserGenericAPIView(GenericAPIView):
@@ -30,7 +30,7 @@ class SignUpView(UserGenericAPIView):
             custom_user = self.queryset.objects.create(
                 first_name=first_name,
                 last_name=last_name,
-            
+
                 username=username,
                 password=password,
             )
@@ -47,12 +47,12 @@ class SignUpView(UserGenericAPIView):
 
             return Response(
                 render_data(data=user_serializer.data, success='true'),
-                status = status.HTTP_201_CREATED
+                status=status.HTTP_201_CREATED
             )
         except Exception as error:
             return Response(
                 render_message(message=str(error), success='false'),
-                status = status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST
             )
 
 
@@ -72,30 +72,30 @@ class LoginView(APIView):
             except exceptions.ObjectDoesNotExist:
                 return Response(
                     render_message(message='User not found', success='false'),
-                    status = status.HTTP_404_NOT_FOUND
+                    status=status.HTTP_404_NOT_FOUND
                 )
 
             if not user.check_password(password):
                 return Response(
                     render_message(message='Incorrect password', success='false'),
-                    status = status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_400_BAD_REQUEST
                 )
             if not user.is_active:
                 return Response(
                     render_message(message='Inactive account', success='false'),
-                    status = status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_400_BAD_REQUEST
                 )
 
             serializer = UserSerializerWithToken(user)
 
             return Response(
                 render_data(data=serializer.data, success='true'),
-                status = status.HTTP_200_OK
+                status=status.HTTP_200_OK
             )
         except Exception as error:
             return Response(
                 render_message(message=str(error), success='false'),
-                status = status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST
             )
 
 
@@ -109,12 +109,12 @@ class LogoutView(APIView):
             token.blacklist()
             return Response(
                 render_message(message='Logged out successfully', success='true'),
-                status = status.HTTP_205_RESET_CONTENT
+                status=status.HTTP_205_RESET_CONTENT
             )
         except Exception as error:
             return Response(
                 render_message(message=str(error), success='false'),
-                status = status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST
             )
 
 
@@ -128,15 +128,15 @@ class ListUsersView(UserGenericAPIView):
 
                 return Response(
                     render_data(data=serializer.data, success='true'),
-                    status = status.HTTP_200_OK
+                    status=status.HTTP_200_OK
                 )
             else:
                 return Response(
                     render_message(message='User not admin', success='false'),
-                    status = status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_400_BAD_REQUEST
                 )
         except Exception as error:
             return Response(
                 render_message(message=str(error), success='false'),
-                status = status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST
             )
