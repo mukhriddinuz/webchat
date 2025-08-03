@@ -118,7 +118,7 @@ class LogoutView(APIView):
             )
 
 
-class ListUsersView(UserGenericAPIView)
+class ListUsersView(UserGenericAPIView):
 
     def get(self, request):
         try:
