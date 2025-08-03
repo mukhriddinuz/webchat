@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure---+r$0cx+jw8a+sl4ltu%*!-9=h2sffjn12++q1h!n1wcxb7yb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -88,7 +88,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'home.wsgi.application'
+ASGI_APPLICATION = 'home.asgi.application'
 
 
 # Database
@@ -145,5 +145,5 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-AUTH_USER_MODEL = 'main.User'
+AUTH_USER_MODEL = 'chat.User'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
