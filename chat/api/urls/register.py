@@ -1,6 +1,6 @@
 from django.urls import path
 
-from chat.views import SignUpView, LoginView, LogoutView, \
+from ..views.register import SignUpView, LoginView, LogoutView, \
     ListUsersView
 
 urlpatterns = [
