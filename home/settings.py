@@ -1,7 +1,7 @@
 from pathlib import Path
 from datetime import timedelta
 
-BASE_DIR = Path(file).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure---+r$0cx+jw8a+sl4ltu%*!-9=h2sffjn12++q1h!n1wcxb7yb'
 
@@ -70,6 +70,15 @@ TEMPLATES = [
 
 # WSGI_APPLICATION = 'home.wsgi.application'
 ASGI_APPLICATION = 'home.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],  # Redis localda ishga tushgan bo‘lishi kerak!
+        },
+    },
+}
 
 
 DATABASES = {

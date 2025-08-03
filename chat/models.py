@@ -5,20 +5,23 @@ from django.utils import timezone
 class User(AbstractUser):
    status = models.IntegerField(choices=((1, 'Admin'), (2, 'Employee')), default=1)
    image = models.ImageField(upload_to='users/', blank=True, null=True)
+   
 
-
-class ChatGroup(models.Model):
-   name = models.CharField(max_length=255)
+class Chat(models.Model):
+   name = models.CharField(max_length=255, null=True)
    is_active = models.BooleanField(default=True)
    created_at = models.DateTimeField(auto_now_add=True)
    date = models.DateTimeField(auto_now=True)
-   users = models.ManyToManyField(User, related_name='chat_groups')
+   is_group = models.BooleanField(default=False)
+   participants = models.ManyToManyField(User, related_name='chat_groups', verbose_name='ishtirokchilar')
+   sender = models.ForeignKey(User, related_name='sender_chats', on_delete=models.SET_NULL, null=True, db_index=True, verbose_name='jonatuvchi')
+   recipient = models.ForeignKey(User, related_name='recipient_chats', on_delete=models.SET_NULL, null=True, db_index=True, verbose_name='qabul qiluvchi')
 
 
 class Message(models.Model):
    sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
    created_at = models.DateTimeField(auto_now_add=True)
-   chat_group = models.ForeignKey(ChatGroup, on_delete=models.SET_NULL, null=True, blank=True)
+   chat = models.ForeignKey(Chat, on_delete=models.SET_NULL, null=True, blank=True)
    file = models.FileField(upload_to='message_files/', blank=True, null=True)
    text = models.TextField()
    is_main = models.BooleanField(default=False)
