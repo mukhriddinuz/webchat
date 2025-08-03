@@ -6,7 +6,7 @@ from .models import User
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField()
 
     def validate(self, attrs):
         username = attrs.get('username')
@@ -34,9 +34,8 @@ class UserSerializerWithToken(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'first_name', 'last_name', 'username',
-            'status', 'is_superuser', 'access', 'refresh',
-            'isAdmin', 'image'
+            'id', 'first_name', 'last_name', 'username', 'is_superuser', 'access', 'refresh',
+            'isAdmin',
         )
 
     def get_access(self, user: User):

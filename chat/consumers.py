@@ -1,71 +1,126 @@
+# consumers.py
 import json
-import datetime
 from channels.generic.websocket import AsyncWebsocketConsumer
-from pprint import pprint
+from channels.db import database_sync_to_async
+from django.contrib.auth.models import AnonymousUser
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from django.utils import timezone
+from .models import Message, User, Chat
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
-        self.room_group_name = f"chat_{self.room_name}"
-        pprint(self.scope)
+        # Get token from headers
+        try:
+            headers = dict(self.scope['headers'])
+            auth_header = headers.get(b'authorization', b'').decode('utf-8')
+            
+            if auth_header.startswith('Bearer '):
+                token = auth_header.split(' ')[1]
+                user = await self.get_user_from_token(token)
+                print(user)
+                if user and not isinstance(user, AnonymousUser):
+                    self.user = user
+                    print(f"User authenticated: {self.user.status}")
+                    self.room_name = self.scope['url_route']['kwargs']['chat_id']
+                    self.room_group_name = f'chat_{self.room_name}'
+                    
+                    await self.channel_layer.group_add(
+                        self.room_group_name,
+                        self.channel_name
+                    )
+                    await self.accept()
+                    # await self.fecht_history()
+                    return
+        except Exception as e:
+            print(f"Connection error: {str(e)}")
+        
+        # Close connection if authentication fails
+        await self.close()
 
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
-        )
-
-        await self.accept()
+    @database_sync_to_async
+    def get_user_from_token(self, token):
+        """Helper method to get user from JWT token"""
+        try:
+            jwt_auth = JWTAuthentication()
+            validated_token = jwt_auth.get_validated_token(token)
+            return jwt_auth.get_user(validated_token)
+        except (InvalidToken, TokenError) as e:
+            print(f"Token validation failed: {str(e)}")
+            return AnonymousUser()
+        except Exception as e:
+            print(f"Authentication error: {str(e)}")
+            return AnonymousUser()
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+        """Clean up on disconnect"""
+        if hasattr(self, 'room_group_name'):
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name
+            )
 
     async def receive(self, text_data):
-        data = json.loads(text_data)
-        message = data.get('message')
-        now = datetime.datetime.now().strftime("%H:%M:%S")
-
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': message,
-                'time': now,
-                'sender_channel': self.channel_name 
-            }
-        )
+        """Handle incoming messages"""
+        try:
+            data = json.loads(text_data)
+            message = data['message']
+            
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'chat_message',
+                    'message': message,
+                    'sender': self.user.username,
+                    'senderid': self.user.id,
+                    'chat_id': self.room_name,
+                    'created_at': str(timezone.now())
+                }
+            )
+        except Exception as e:
+            print(f"Message handling error: {str(e)}")
 
     async def chat_message(self, event):
-        message = event['message']
-        time = event['time']
-        sender_channel = event['sender_channel'] 
-        if self.channel_name == sender_channel:
-            return
+        """Send message to WebSocket"""
+        time = await self.get_time_save(event)
+        if self.scope["user"].id != event["senderid"]:
+            await self.send(text_data=json.dumps({
+                "message": event["message"],
+                "sender": event["sender"],
+                "created_at": event["created_at"]
+            }))
 
-        await self.send(text_data=json.dumps({
-            'message': message,
-            'time': time
-        }))
-
-
-
-class OnlineUsersConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        self.room_group_name = "online_users"
-
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
+    @database_sync_to_async
+    def get_time_save(self, data):
+        message = Message.objects.create(
+            sender_id=data['senderid'],
+            chat_id=data['chat_id'],
+            text=data['message'],
         )
+        print(data)
+        return message.created_at
+    
+    async def fetch_history(self):
+        messages = await self.history_messages()
+        for message in messages:
+            await self.send(text_data=json.dumps(message))
+    
+    @database_sync_to_async
+    def history_messages(self, chat_id):
+        messages = Message.objects.filter(chat_id=chat_id).order_by('-created_at')
+        return [
+            {
+                'sender': message.sender.username,
+                'message': message.text,
+                'created_at': message.created_at.isoformat()
+            } for message in messages
+        ]
+        
 
+class OnlineUsers(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.room_name = 'online_users'
         await self.accept()
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
-
-    # async def receive(self, text_data):
+        await self.close()
